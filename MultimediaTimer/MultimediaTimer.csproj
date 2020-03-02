@@ -1,7 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <PackageId>MultimediaTimer</PackageId>
+    <Title>Multimedia Timer </Title>
+    <Description>A .NET Core wrapper for the Windows Multimedia Timer class</Description>
+    <RepositoryUrl>https://github.com/MikeCodesDotNET/Multimedia-Timer</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <Version>1.0.0</Version>
+    <Authors>Mike James</Authors>
+    <Company>Microsoft</Company>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <Copyright>Mike James</Copyright>
+    <PackageProjectUrl>https://github.com/MikeCodesDotNET/Multimedia-Timer</PackageProjectUrl>
+    <PackageTags>Timer</PackageTags>
+    <PackageReleaseNotes>First release of the high-performance timer for .NET Core based Windows applications.</PackageReleaseNotes>
   </PropertyGroup>
-
+  <ItemGroup>
+    <None Include="..\LICENSE.txt" Pack="true" PackagePath="LICENSE.txt" />
+  </ItemGroup>
 </Project>
