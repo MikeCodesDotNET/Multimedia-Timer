@@ -9,9 +9,8 @@ namespace DemoApp
         {
             Console.WriteLine("Hello World!");
 
-            var timer = new Timer();
-            timer.Tick += Timer_Tick;
-            timer.Delay = TimeSpan.FromMilliseconds(5);
+            var timer = new Timer(5);
+            timer.Elapsed += Timer_Tick;
             timer.Resolution = TimeSpan.FromMilliseconds(2);
             timer.Start();
 

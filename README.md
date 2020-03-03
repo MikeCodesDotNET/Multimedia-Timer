@@ -10,15 +10,16 @@ These timer services are useful for applications that demand high-resolution tim
 
 ## Installing the Package 
 ``` 
-Install-Package MultimediaTimer -Version 1.0.0
+Install-Package MultimediaTimer -Version 1.0.1
 ``` 
 
 ## How to use
 
 ``` 
-var timer = new Timer();
-timer.Tick += Timer_Tick;
-timer.Delay = TimeSpan.FromMilliseconds(5);
+var timer = new Timer(5);
+timer.Elapsed += Timer_Tick;
+
+//Optional. Defaults to 1ms
 timer.Resolution = TimeSpan.FromMilliseconds(2);
 timer.Start();
 ```

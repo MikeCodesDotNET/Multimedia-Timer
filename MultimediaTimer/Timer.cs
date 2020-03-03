@@ -7,7 +7,7 @@ namespace MultimediaTimer
     //Used https://docs.microsoft.com/en-us/dotnet/standard/native-interop/pinvoke as a guide 
     // This was also VERY useful: https://docs.microsoft.com/en-gb/windows/win32/multimedia/timer-operations
 
-    public sealed class Timer
+    public sealed class Timer : IComponent
     {
         /// <summary>
         /// The timeGetDevCaps function queries the timer device to determine its resolution.
@@ -54,18 +54,28 @@ namespace MultimediaTimer
 
         public event EventHandler Started;
         public event EventHandler Stopped;
-        public event EventHandler Tick;
+        public event EventHandler Elapsed;
+        public event EventHandler Disposed;
 
         static Timer()
         {
             timeGetDevCaps(ref caps, Marshal.SizeOf<TimerCaps>(Timer.caps));
         }
 
+
         public Timer()
         {
             Initialize();
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref='MultimediaTimer.Timer'/> class, setting the <see cref='MultimediaTimer.Timer.Interval'/> property to the specified period.
+        /// </summary>
+        public Timer(double interval)
+        {
+            Interval = TimeSpan.FromMilliseconds(interval);
+            Initialize();
+        }
 
         private void Initialize()
         {
@@ -73,25 +83,25 @@ namespace MultimediaTimer
             period = Capabilities.PeriodMin;
             Resolution = TimeSpan.FromMilliseconds(1);
             IsRunning = false;
-            timeProcPeriodic = new TimeProc(TimerPeriodicEventCallback);
-            timeProcOneShot = new TimeProc(TimerOneShotEventCallback);
+            timeProcPeriodic = new TimeProc(PeriodicEventCallback);
+            timeProcOneShot = new TimeProc(OneShotEventCallback);
             tickRaiser = new TickDelegate(OnTick);
         }
 
 
         public void Start()
-        {            
+        {
             if (IsRunning)
             {
                 return;
             }
             if (Mode == TimerMode.Periodic)
             {
-                timerID = timeSetEvent((int)Delay.TotalMilliseconds, resolution, timeProcPeriodic, 0, (int)Mode);
+                timerID = timeSetEvent((int)Interval.TotalMilliseconds, resolution, timeProcPeriodic, 0, (int)Mode);
             }
             else
             {
-                timerID = timeSetEvent((int)Delay.TotalMilliseconds, resolution, timeProcOneShot, 0, (int)Mode);
+                timerID = timeSetEvent((int)Interval.TotalMilliseconds, resolution, timeProcOneShot, 0, (int)Mode);
             }
             if (timerID == 0)
             {
@@ -110,7 +120,7 @@ namespace MultimediaTimer
         }
 
         public void Stop()
-        {            
+        {
             if (!IsRunning)
             {
                 return;
@@ -131,11 +141,11 @@ namespace MultimediaTimer
         public ISynchronizeInvoke SynchronizingObject
         {
             get
-            {                
+            {
                 return synchronizingObject;
             }
             set
-            {                
+            {
                 synchronizingObject = value;
             }
         }
@@ -144,14 +154,14 @@ namespace MultimediaTimer
         /// Event delay, in milliseconds. 
         /// If this value is not in the range of the minimum and maximum event delays supported by the timer, the function returns an error.
         /// </summary>
-        public TimeSpan Delay
+        public TimeSpan Interval
         {
             get
-            {                
+            {
                 return TimeSpan.FromMilliseconds(period);
             }
             set
-            {                
+            {
                 if (value.TotalMilliseconds < Capabilities.PeriodMin || value.TotalMilliseconds > Capabilities.PeriodMax)
                 {
                     throw new ArgumentOutOfRangeException("Delay", value, "Multimedia Timer delay out of range.");
@@ -176,11 +186,11 @@ namespace MultimediaTimer
         public TimeSpan Resolution
         {
             get
-            {               
+            {
                 return TimeSpan.FromMilliseconds(resolution);
             }
             set
-            {               
+            {
                 resolution = (int)value.TotalMilliseconds;
                 if (IsRunning)
                 {
@@ -193,11 +203,11 @@ namespace MultimediaTimer
         public TimerMode Mode
         {
             get
-            {              
+            {
                 return mode;
             }
             set
-            {                
+            {
                 mode = value;
                 if (IsRunning)
                 {
@@ -211,8 +221,9 @@ namespace MultimediaTimer
 
         public static TimerCaps Capabilities => caps;
 
+        public ISite Site {get; set;}
 
-        private void TimerPeriodicEventCallback(int id, int msg, int user, int param1, int param2)
+        private void PeriodicEventCallback(int id, int msg, int user, int param1, int param2)
         {
             if (synchronizingObject != null)
             {
@@ -225,7 +236,7 @@ namespace MultimediaTimer
             OnTick(EventArgs.Empty);
         }
 
-        private void TimerOneShotEventCallback(int id, int msg, int user, int param1, int param2)
+        private void OneShotEventCallback(int id, int msg, int user, int param1, int param2)
         {
             if (synchronizingObject != null)
             {
@@ -253,7 +264,12 @@ namespace MultimediaTimer
 
         private void OnTick(EventArgs e)
         {
-            Tick?.Invoke(this, e);
+            Elapsed?.Invoke(this, e);
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
         }
 
         ~Timer()
